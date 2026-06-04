@@ -1,0 +1,22 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-phase-label
+spec:
+  background: false
+  rules:
+    - name: require-training-phase-label
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - policy-lab
+      validate:
+        failureAction: Enforce
+        message: "Pods in policy-lab must include label training.kyverno.io/phase=4."
+        pattern:
+          metadata:
+            labels:
+              training.kyverno.io/phase: "4"

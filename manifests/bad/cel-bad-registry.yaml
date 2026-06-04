@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cel-bad-registry
+  namespace: cel-lab
+  labels:
+    app.kubernetes.io/name: cel-bad-registry
+    app.kubernetes.io/part-of: policy-lab
+    owner: platform-security
+    env: dev
+spec:
+  containers:
+    - name: app
+      image: docker.io/library/busybox:1.36
+      command: ["sh", "-c", "sleep 3600"]

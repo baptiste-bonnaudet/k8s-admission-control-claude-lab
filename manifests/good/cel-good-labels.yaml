@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cel-good-labels
+  namespace: cel-lab
+  labels:
+    app.kubernetes.io/name: cel-good-labels
+    app.kubernetes.io/part-of: policy-lab
+    owner: platform-security
+    env: dev
+spec:
+  containers:
+    - name: app
+      image: registry.k8s.io/pause:3.10

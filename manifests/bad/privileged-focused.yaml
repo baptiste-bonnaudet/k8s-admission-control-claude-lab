@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-privileged-focused
+  namespace: policy-lab
+spec:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: app
+      image: busybox:1.36
+      command: ["sh", "-c", "sleep 3600"]
+      securityContext:
+        privileged: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL

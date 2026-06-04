@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cel-bad-labels
+  namespace: cel-lab
+spec:
+  containers:
+    - name: app
+      image: registry.k8s.io/pause:3.10
