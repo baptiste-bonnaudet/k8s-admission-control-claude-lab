@@ -27,7 +27,15 @@ This lab covers the four main layers of Kubernetes admission control: Pod Securi
 | [03](modules/03-kyverno/) | Kyverno | Admission webhook | Kyverno installed |
 | [04](modules/04-gatekeeper/) | OPA/Gatekeeper | Admission webhook | Gatekeeper installed |
 
-Work through them in order, or jump to any module if you have the dependencies.
+## Learning paths
+
+**Sequential (recommended)** — follow the module order. Each module builds on the mental model of the previous one: built-in controls first, then external webhook engines.
+
+```
+01-psa → 02-cel → 03-kyverno → 04-gatekeeper
+```
+
+**Jump in** — modules are self-contained. If you already know PSA and CEL, go straight to `03-kyverno` or `04-gatekeeper`. Each module README lists its own prerequisites and setup steps.
 
 ---
 
