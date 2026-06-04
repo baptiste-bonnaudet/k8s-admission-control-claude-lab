@@ -1,0 +1,40 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: allowed-registries
+spec:
+  background: false
+  rules:
+    - name: check-registries
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - kyverno-lab
+      validate:
+        failureAction: Enforce
+        message: "Images must come from approved registries: registry.k8s.io/ or nginxinc/."
+        foreach:
+          - list: "request.object.spec.containers"
+            deny:
+              conditions:
+                all:
+                  - key: "{{ regex_match('^(registry\\.k8s\\.io/|nginxinc/)', element.image) }}"
+                    operator: Equals
+                    value: false
+          - list: "request.object.spec.initContainers || `[]`"
+            deny:
+              conditions:
+                all:
+                  - key: "{{ regex_match('^(registry\\.k8s\\.io/|nginxinc/)', element.image) }}"
+                    operator: Equals
+                    value: false
+          - list: "request.object.spec.ephemeralContainers || `[]`"
+            deny:
+              conditions:
+                all:
+                  - key: "{{ regex_match('^(registry\\.k8s\\.io/|nginxinc/)', element.image) }}"
+                    operator: Equals
+                    value: false

@@ -1,0 +1,16 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sAllowedRegistries
+metadata:
+  name: pods-must-use-approved-registries
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    namespaces:
+      - gatekeeper-lab
+  parameters:
+    registries:
+      - "registry.k8s.io/"
+      - "nginxinc/"

@@ -1,0 +1,21 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: mutate-add-default-seccomp
+spec:
+  background: false
+  rules:
+    - name: add-seccomp-profile
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - kyverno-lab
+      mutate:
+        patchStrategicMerge:
+          spec:
+            securityContext:
+              +(seccompProfile):
+                type: RuntimeDefault

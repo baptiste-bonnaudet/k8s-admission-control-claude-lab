@@ -1,0 +1,24 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-labels-audit
+spec:
+  background: false
+  rules:
+    - name: require-ownership-labels
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - kyverno-lab
+      validate:
+        failureAction: Enforce
+        message: "Pods must include labels: app.kubernetes.io/name, owner, and env."
+        pattern:
+          metadata:
+            labels:
+              app.kubernetes.io/name: "?*"
+              owner: "?*"
+              env: "?*"

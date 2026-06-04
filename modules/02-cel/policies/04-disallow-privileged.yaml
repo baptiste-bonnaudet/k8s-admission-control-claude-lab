@@ -1,0 +1,40 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: disallow-privileged.lab.example.com
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - expression: >
+        object.spec.containers.all(c,
+          !has(c.securityContext)
+          || !has(c.securityContext.privileged)
+          || c.securityContext.privileged == false
+        )
+        &&
+        (!has(object.spec.initContainers)
+          || object.spec.initContainers.all(c,
+            !has(c.securityContext)
+            || !has(c.securityContext.privileged)
+            || c.securityContext.privileged == false
+          )
+        )
+      message: "Privileged containers are not allowed."
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: disallow-privileged-binding.lab.example.com
+spec:
+  policyName: disallow-privileged.lab.example.com
+  validationActions: [Deny]
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        admission.lab.example.com/cel-lab: "true"

@@ -1,0 +1,40 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: required-workload-labels.lab.example.com
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+      - apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["deployments", "statefulsets", "daemonsets"]
+      - apiGroups: ["batch"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["jobs"]
+  validations:
+    - expression: >
+        has(object.metadata.labels)
+        && 'app.kubernetes.io/name' in object.metadata.labels
+        && 'app.kubernetes.io/part-of' in object.metadata.labels
+        && 'owner' in object.metadata.labels
+        && 'env' in object.metadata.labels
+      message: "Workloads must include labels: app.kubernetes.io/name, app.kubernetes.io/part-of, owner, and env."
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: required-workload-labels-binding.lab.example.com
+spec:
+  policyName: required-workload-labels.lab.example.com
+  validationActions: [Deny]
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        admission.lab.example.com/cel-lab: "true"

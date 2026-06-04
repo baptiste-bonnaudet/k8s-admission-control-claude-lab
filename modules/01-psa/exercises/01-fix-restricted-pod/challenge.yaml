@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: challenge-restricted-pod
+  namespace: policy-lab
+spec:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: app
+      image: nginxinc/nginx-unprivileged:1.27
+      ports:
+        - containerPort: 8080
+      # Missing: container-level securityContext
+      # The pod-level securityContext alone is not enough for restricted

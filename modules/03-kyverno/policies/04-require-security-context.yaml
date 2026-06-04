@@ -1,0 +1,57 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-pod-security-context
+spec:
+  background: false
+  rules:
+    - name: require-runasnonroot
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - kyverno-lab
+      validate:
+        failureAction: Enforce
+        message: "Pods must set runAsNonRoot: true in spec.securityContext."
+        pattern:
+          spec:
+            securityContext:
+              runAsNonRoot: true
+    - name: require-seccomp
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - kyverno-lab
+      validate:
+        failureAction: Enforce
+        message: "Pods must set seccompProfile.type to RuntimeDefault or Localhost."
+        pattern:
+          spec:
+            securityContext:
+              seccompProfile:
+                type: "RuntimeDefault | Localhost"
+    - name: require-drop-all
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - kyverno-lab
+      validate:
+        failureAction: Enforce
+        message: "All containers must drop ALL capabilities and set allowPrivilegeEscalation: false."
+        pattern:
+          spec:
+            containers:
+              - securityContext:
+                  allowPrivilegeEscalation: false
+                  capabilities:
+                    drop:
+                      - ALL

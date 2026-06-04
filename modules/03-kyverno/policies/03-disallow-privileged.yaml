@@ -1,0 +1,33 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-privileged-containers
+spec:
+  background: false
+  rules:
+    - name: disallow-privileged
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - kyverno-lab
+      validate:
+        failureAction: Enforce
+        message: "Privileged containers are not allowed."
+        foreach:
+          - list: "request.object.spec.containers"
+            deny:
+              conditions:
+                all:
+                  - key: "{{ element.securityContext.privileged || false }}"
+                    operator: Equals
+                    value: true
+          - list: "request.object.spec.initContainers || `[]`"
+            deny:
+              conditions:
+                all:
+                  - key: "{{ element.securityContext.privileged || false }}"
+                    operator: Equals
+                    value: true

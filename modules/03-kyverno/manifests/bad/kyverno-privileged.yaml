@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kyverno-privileged
+  namespace: kyverno-lab
+  labels:
+    app.kubernetes.io/name: kyverno-privileged
+    owner: platform-security
+    env: dev
+spec:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: app
+      image: nginxinc/nginx-unprivileged:1.27
+      securityContext:
+        privileged: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL

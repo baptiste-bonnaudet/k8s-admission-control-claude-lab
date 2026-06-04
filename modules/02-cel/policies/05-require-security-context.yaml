@@ -1,0 +1,51 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: require-security-context.lab.example.com
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - expression: >
+        has(object.spec.securityContext)
+        && has(object.spec.securityContext.runAsNonRoot)
+        && object.spec.securityContext.runAsNonRoot == true
+      message: "Pods must set spec.securityContext.runAsNonRoot: true."
+    - expression: >
+        has(object.spec.securityContext)
+        && has(object.spec.securityContext.seccompProfile)
+        && (object.spec.securityContext.seccompProfile.type == 'RuntimeDefault'
+            || object.spec.securityContext.seccompProfile.type == 'Localhost')
+      message: "Pods must set a seccompProfile of type RuntimeDefault or Localhost."
+    - expression: >
+        object.spec.containers.all(c,
+          has(c.securityContext)
+          && has(c.securityContext.allowPrivilegeEscalation)
+          && c.securityContext.allowPrivilegeEscalation == false
+        )
+      message: "All containers must set allowPrivilegeEscalation: false."
+    - expression: >
+        object.spec.containers.all(c,
+          has(c.securityContext)
+          && has(c.securityContext.capabilities)
+          && has(c.securityContext.capabilities.drop)
+          && c.securityContext.capabilities.drop.exists(cap, cap == 'ALL')
+        )
+      message: "All containers must drop ALL capabilities."
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: require-security-context-binding.lab.example.com
+spec:
+  policyName: require-security-context.lab.example.com
+  validationActions: [Deny]
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        admission.lab.example.com/cel-lab: "true"

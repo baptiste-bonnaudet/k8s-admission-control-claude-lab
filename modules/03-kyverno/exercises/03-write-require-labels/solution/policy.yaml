@@ -1,0 +1,24 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-deployment-labels
+spec:
+  background: false
+  rules:
+    - name: require-ownership-labels
+      match:
+        any:
+          - resources:
+              kinds:
+                - Deployment
+              namespaces:
+                - kyverno-lab
+      validate:
+        failureAction: Enforce
+        message: "Deployments must include labels: team, app, and cost-center."
+        pattern:
+          metadata:
+            labels:
+              team: "?*"
+              app: "?*"
+              cost-center: "?*"

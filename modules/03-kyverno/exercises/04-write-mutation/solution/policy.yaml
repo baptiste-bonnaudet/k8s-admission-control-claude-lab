@@ -1,0 +1,22 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: mutate-add-no-priv-escalation
+spec:
+  background: false
+  rules:
+    - name: add-allow-privilege-escalation-false
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - kyverno-lab
+      mutate:
+        patchStrategicMerge:
+          spec:
+            containers:
+              - (name): "?*"
+                securityContext:
+                  +(allowPrivilegeEscalation): false

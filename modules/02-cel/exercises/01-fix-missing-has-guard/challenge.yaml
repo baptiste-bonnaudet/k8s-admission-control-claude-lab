@@ -1,0 +1,36 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: challenge-allowed-registries.lab.example.com
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - expression: >
+        object.spec.containers.all(c,
+          c.image.startsWith('registry.k8s.io/')
+          || c.image.startsWith('nginxinc/')
+        )
+        &&
+        object.spec.initContainers.all(c,
+          c.image.startsWith('registry.k8s.io/')
+          || c.image.startsWith('nginxinc/')
+        )
+      message: "Container images must come from approved registries."
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: challenge-allowed-registries-binding.lab.example.com
+spec:
+  policyName: challenge-allowed-registries.lab.example.com
+  validationActions: [Deny]
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        admission.lab.example.com/cel-lab: "true"

@@ -1,0 +1,31 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: require-seccomp.lab.example.com
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - expression: >
+        has(object.spec.securityContext)
+        && has(object.spec.securityContext.seccompProfile)
+        && (object.spec.securityContext.seccompProfile.type == 'RuntimeDefault'
+            || object.spec.securityContext.seccompProfile.type == 'Localhost')
+      message: "Pods must set seccompProfile.type to RuntimeDefault or Localhost."
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: require-seccomp-binding.lab.example.com
+spec:
+  policyName: require-seccomp.lab.example.com
+  validationActions: [Deny]
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        admission.lab.example.com/cel-lab: "true"
